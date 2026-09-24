@@ -1,0 +1,21 @@
+name: Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-ref:
+        description: 'Git ref to deploy (commit SHA, tag, or branch)'
+        required: true
+        default: 'main'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    # Skip until Module 06 (Azure setup) has created the AZURE_* repository variables
+    if: vars.AZURE_CLIENT_ID != ''
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      deploy-ref: ${{ inputs.deploy-ref }}

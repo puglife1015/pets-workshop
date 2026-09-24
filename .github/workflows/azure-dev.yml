@@ -1,0 +1,26 @@
+name: Deploy App
+
+on: # zizmor: ignore[dangerous-triggers]
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    # Skip until Module 06 (Azure setup) has created the AZURE_* repository variables
+    if: >-
+      vars.AZURE_CLIENT_ID != '' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == github.event.repository.default_branch))
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      deploy-ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
